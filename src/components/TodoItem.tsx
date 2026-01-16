@@ -31,6 +31,22 @@ export default function TodoItem({ todo, onUpdate, onDelete }: TodoItemProps) {
     opacity: isDragging ? 0.5 : 1,
   }
 
+  const handleStatusChange = async (newStatus: 'todo' | 'in_progress' | 'done') => {
+    if (!supabase) return
+
+    try {
+      const { error } = await supabase
+        .from('todos')
+        .update({ status: newStatus })
+        .eq('id', todo.id)
+
+      if (error) throw error
+      onUpdate()
+    } catch (error) {
+      console.error('Error updating status:', error)
+    }
+  }
+
   const handleSave = async () => {
     if (!title.trim() || !supabase) return
 
@@ -147,6 +163,34 @@ export default function TodoItem({ todo, onUpdate, onDelete }: TodoItemProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
+      </div>
+
+      {/* 상태 변경 버튼 */}
+      <div className="flex gap-1 mt-3">
+        {todo.status !== 'todo' && (
+          <button
+            onClick={() => handleStatusChange('todo')}
+            className="px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded hover:bg-gray-300"
+          >
+            할 일
+          </button>
+        )}
+        {todo.status !== 'in_progress' && (
+          <button
+            onClick={() => handleStatusChange('in_progress')}
+            className="px-2 py-1 text-xs bg-yellow-200 text-yellow-700 rounded hover:bg-yellow-300"
+          >
+            진행중
+          </button>
+        )}
+        {todo.status !== 'done' && (
+          <button
+            onClick={() => handleStatusChange('done')}
+            className="px-2 py-1 text-xs bg-green-200 text-green-700 rounded hover:bg-green-300"
+          >
+            완료
+          </button>
+        )}
       </div>
     </div>
   )
